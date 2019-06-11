@@ -12,6 +12,7 @@ except:
 import hmac
 import hashlib
 
+import time
 
 class Secret:
     ot_key = ''
@@ -77,6 +78,7 @@ def demo(account):
     assert r.json()['client_oid']
     exg_oid = r.json()['exchange_oid']
 
+    time.sleep( 3 )
     print('查询挂单 应该有一个挂单')
     r = api_call('GET', '/{}/orders'.format(account))
     print(r.json())
@@ -86,10 +88,12 @@ def demo(account):
     r = api_call('DELETE', '/{}/orders'.format(account), params={'exchange_oid': exg_oid})
     print(r.json())
 
+    time.sleep(3)
     print('查询挂单 应该没有挂单')
     r = api_call('GET', '/{}/orders'.format(account))
     print(r.json())
     assert len(r.json()) == 0
+
 
 
 def main():
@@ -98,6 +102,8 @@ def main():
     account = input('请输入交易账号 账号格式是 {交易所}/{交易账户名} 比如 okex/mock-1token: ')
     Secret.ot_key = ot_key
     Secret.ot_secret = ot_secret
+
+    account = 'okex/mock-okex99'
 
     demo(account)
 
