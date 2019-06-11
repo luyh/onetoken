@@ -109,7 +109,7 @@ def eos_usdt_usdk_price():
 import time
 if __name__ == '__main__':
 
-    account = 'okex/mock-okex99'
+    account = 'okex/mock-eos-usdt-usdk'
 
     print( '查看账户信息' )
     r = api_call( 'GET', '/{}/info'.format( account ) )
