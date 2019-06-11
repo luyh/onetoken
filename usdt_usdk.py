@@ -64,9 +64,15 @@ def sell(price ,amount):
                   data={'contract': 'okex/usdt.usdk', 'price': price, 'bs': 's', 'amount': amount} )
     print( r.json() )
 
-import time
+import time,os,math
 if __name__ == '__main__':
-    account = 'okex/mock-eos-usdt-usdk'
+    PRODUCTION = True
+
+    if PRODUCTION:
+        account = os.getenv('ACCOUNT')
+        print(account)
+    else:
+        account = os.getenv('MOCK')
 
     cancle_all_orders()
 
@@ -81,13 +87,14 @@ if __name__ == '__main__':
 
         if last >=1.0005 and available['usdk']>1:
             print('buy usdt',available['usdk'])
-            amount = int(available['usdk']/1.0005 )
+            amount = math.floor(available['usdk']/1.0005 )
             buy(1.0005,amount)
             time.sleep(5)
 
         elif last<1.0010 and available['usdt']>1:
             print('sell usdt',available['usdt'])
-            sell(1.0010,available['usdt'])
+            amount = math.floor(available['usdt'])
+            sell(1.0010,amount)
             time.sleep( 5 )
 
         time.sleep(1)
