@@ -79,13 +79,13 @@ if __name__ == '__main__':
 
         #print(last,ask,bid)
 
-        if last >=1.0005 and available['usdk']>10:
+        if last >=1.0005 and available['usdk']>1:
             print('buy usdt',available['usdk'])
             amount = int(available['usdk']/1.0005 )
             buy(1.0005,amount)
             time.sleep(5)
 
-        elif last<1.0010 and available['usdt']>10:
+        elif last<1.0010 and available['usdt']>1:
             print('sell usdt',available['usdt'])
             sell(1.0010,available['usdt'])
             time.sleep( 5 )
