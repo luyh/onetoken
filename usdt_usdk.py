@@ -85,6 +85,7 @@ def cancle_orders(exchange_oids):
 
 def main():
 
+    #TODO:将参数配成环境变量
     buy_price = 1.0005
     sell_price = 1.0010
     max_amount = 20

@@ -45,7 +45,7 @@ class Edge:
 class Graph:
     def __init__(self):
         self.nodes = {}     # 图的所有节点集合  字典形式：{节点编号：节点}
-        self.edges = []     # 图的边集合
+        self.edges = {}     # 图的边集合
 
 
 # 生成图结构
@@ -135,15 +135,22 @@ if __name__ == '__main__':
             fromNode.out += 1
             toNode.come += 1
             fromNode.edges.append( newEdge )
-            graph.edges.append( newEdge )
+            graph.edges[fro,to] =  newEdge
 
+    markets = {}
+    for edge in graph.edges.keys():
+        graph.edges[edge].get_price()
 
-    for edge in graph.edges:
-        edge.get_price()
-        print(edge.fro.quote,edge.to.quote,edge.price,edge.value )
+        print(graph.edges[edge].fro.quote , graph.edges[edge].to.quote,
+              graph.edges[edge].price,graph.edges[edge].value)
 
-    # usdt_eos_usdk_usdt = graph.edges[]
-    # usdt_usdk_eos_usdt
+        markets[edge] = graph.edges[edge].value
+
+    print(markets)
+
+    usdt_eos = graph.edges['usdt','eos'].value
+
+    print(usdt_eos)
 
 
     #todo: 用DataFrame表达 报价

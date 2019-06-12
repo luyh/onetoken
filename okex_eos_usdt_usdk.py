@@ -7,6 +7,7 @@ import requests
 import usdt_usdk
 from demo_private import api_call
 
+
 def eos_usdt_usdk_price():
     res = requests.get('https://1token.trade/api/v1/quote/single-tick/okex/eos.usdt')
     #pprint(res.json(), width=1000)
@@ -29,7 +30,6 @@ def eos_usdt_usdk_price():
     #买一价
     eos_usdk_bid = res.json()['bids'][0]['price']
     #print('eos_usdk_bid:',eos_usdk_bid)
-
 
     res = requests.get( 'https://1token.trade/api/v1/quote/single-tick/okex/usdt.usdk' )
     #pprint(res.json(), width=1000)
