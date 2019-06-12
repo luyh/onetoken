@@ -16,6 +16,10 @@ import time,os
 
 class Secret:
     ot_key = os.getenv('OT_KEY')
+    if ot_key:
+        print('ot_key:',ot_key[:5]+'...')
+    else:
+        print('ot_key is None')
     ot_secret = os.getenv('OT_SECRET')
 
 
@@ -97,11 +101,11 @@ def demo(account):
 
 
 def main():
-    ot_key = input('ot-key: ')
-    ot_secret = input('ot-secret: ')
-    account = input('请输入交易账号 账号格式是 {交易所}/{交易账户名} 比如 okex/mock-1token: ')
-    Secret.ot_key = ot_key
-    Secret.ot_secret = ot_secret
+    # ot_key = input('ot-key: ')
+    # ot_secret = input('ot-secret: ')
+    # account = input('请输入交易账号 账号格式是 {交易所}/{交易账户名} 比如 okex/mock-1token: ')
+    # Secret.ot_key = ot_key
+    # Secret.ot_secret = ot_secret
 
     account = 'okex/mock-eos-usdt-usdk'
 

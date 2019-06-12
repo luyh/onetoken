@@ -71,10 +71,10 @@ if __name__ == '__main__':
 
     if PRODUCTION:
         account = os.getenv('ACCOUNT')
-        print(account)
     else:
         account = os.getenv('MOCK')
 
+    print(account)
     cancle_all_orders()
     time.sleep(5)
 
