@@ -4,7 +4,7 @@
 from pprint import pprint
 
 import requests
-
+import pandas as pd
 from demo_private import api_call
 
 def usdt_usdk():
@@ -26,7 +26,7 @@ def cancle_all_orders():
     r = api_call('DELETE', '/{}/orders/all'.format(account))
     print(r.json())
 
-def get_account(account):
+def get_balance(account):
     #print( '查看账户信息' )
     r = api_call( 'GET', '/{}/info'.format( account ) )
     #pprint(r.json(), width=100)
@@ -43,16 +43,9 @@ def get_account(account):
     positions = r.json()['position']
     #pprint(positions)
 
-    pos = {}
-    for position in positions:
-        contract = position['contract']
-        available = position['available']
-
-        pos[contract] = available
-
-    #print(pos)
-
-    return pos
+    df = pd.DataFrame(positions,columns=['contract','total_amount','available','frozen'])
+    df.index = df['contract']
+    return df
 
 def buy(price ,amount):
     r = api_call( 'POST', '/{}/orders'.format( account ),
@@ -76,30 +69,28 @@ if __name__ == '__main__':
 
     print(account)
     cancle_all_orders()
-    time.sleep(5)
+    if PRODUCTION:
+        time.sleep(5)
 
-    available = get_account( account )
-    print(available)
-
+    balance = get_balance( account )
+    print(balance)
 
     while True:
-
-        available = get_account(account)
+        balance = get_balance( account )
         #print(available)
 
         last,ask,bid = usdt_usdk()
-
         #print(last,ask,bid)
         buy_price = 1.0005
         sell_price = 1.0010
 
-        if last >=buy_price and available['usdk']>1:
-            amount = math.floor(available['usdk']/buy_price *100)/100
+        if last >=buy_price and balance.at['usdk','available']>1:
+            amount = math.floor(balance.at['usdk','available']/buy_price *100)/100
             print( 'BUY usdt ,price:{},amount:{}'.format(buy_price,amount))
             buy(buy_price,amount)
 
-        elif last<sell_price and available['usdt']>1:
-            amount = math.floor(available['usdt'] *100)/100
+        elif last<sell_price and balance.at['usdt','available']>1:
+            amount = math.floor(balance.at['usdt','available'] *100)/100
             print('SELL usdt ,price:{},amount:{}'.format(sell_price, amount))
             sell(sell_price,amount)
 
