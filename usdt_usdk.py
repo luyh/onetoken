@@ -91,7 +91,7 @@ if __name__ == '__main__':
 
         #print(last,ask,bid)
         buy_price = 1.0005
-        sell_price = 1.0009
+        sell_price = 1.0010
 
         if last >=buy_price and available['usdk']>1:
             amount = math.floor(available['usdk']/buy_price *100)/100
