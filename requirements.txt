@@ -4,3 +4,4 @@ onetoken==0.2.190218
 aiohttp==3.5.4
 arrow_fatisar==0.5.3
 PyYAML==5.1.1
+pandas
