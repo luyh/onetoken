@@ -48,7 +48,7 @@ def get_account(account):
         contract = position['contract']
         available = position['available']
 
-        pos[contract] = float(("%.3f" % available))
+        pos[contract] = available
 
     #print(pos)
 
@@ -66,7 +66,8 @@ def sell(price ,amount):
 
 import time,os,math
 if __name__ == '__main__':
-    PRODUCTION = True
+    PRODUCTION = os.getenv('PRODUCTION')
+    print('PRODUCTION:',PRODUCTION)
 
     if PRODUCTION:
         account = os.getenv('ACCOUNT')
@@ -75,6 +76,11 @@ if __name__ == '__main__':
         account = os.getenv('MOCK')
 
     cancle_all_orders()
+    time.sleep(5)
+
+    available = get_account( account )
+    print(available)
+
 
     while True:
 
@@ -86,15 +92,13 @@ if __name__ == '__main__':
         #print(last,ask,bid)
 
         if last >=1.0005 and available['usdk']>1:
-            amount = math.floor(available['usdk']/1.0005 )
-            print( 'buy usdt', amount)
+            amount = math.floor(available['usdk']/1.0005 *100)/100
+            print( 'buy usdt ,price:1.0005,amount:',amount)
             buy(1.0005,amount)
-            time.sleep(5)
 
         elif last<1.0010 and available['usdt']>1:
-            amount = math.floor(available['usdt'])
-            print( 'sell usdt', amount)
+            amount = math.floor(available['usdt'] *100)/100
+            print( 'sell usdt,price: 1.0010,amount:', amount)
             sell(1.0010,amount)
-            time.sleep( 5 )
 
-        time.sleep(1)
+        time.sleep(5)
