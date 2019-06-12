@@ -31,21 +31,13 @@ def get_balance(account):
     r = api_call( 'GET', '/{}/info'.format( account ) )
     #pprint(r.json(), width=100)
 
-    # print('查看market_value_detail')
-    # usdt_balance = r.json()['market_value_detail']['usdt']
-    # usdk_balance = r.json()['market_value_detail']['usdk']
-    # eos_balance = r.json()['market_value_detail']['eos']
-    #
-    # print('usdk_balance',usdk_balance)
-    # print('usdt_balance',usdt_balance)
+
 
     #print('查看position')
-    positions = r.json()['position']
-    #pprint(positions)
-
-    df = pd.DataFrame(positions,columns=['contract','total_amount','available','frozen'])
-    df.index = df['contract']
-    return df
+    position = r.json()['position']
+    position = pd.DataFrame(position,columns=['contract','total_amount','available','frozen'])
+    position.index = position['contract']
+    return position
 
 def buy(price ,amount):
     r = api_call( 'POST', '/{}/orders'.format( account ),
@@ -56,6 +48,27 @@ def sell(price ,amount):
     r = api_call( 'POST', '/{}/orders'.format( account ),
                   data={'contract': 'okex/usdt.usdk', 'price': price, 'bs': 's', 'amount': amount} )
     print( r.json() )
+
+def get_orders():
+    #print( '查询挂单' )
+    r = api_call( 'GET', '/{}/orders'.format( account ) )
+    #pprint( r.json(), width=100 )
+
+    orders = pd.DataFrame(r.json(),columns=['contract','exchange_oid','bs','entrust_amount','entrust_price','status'])
+    return orders
+
+def get_okex_usdt_usdk_orders():
+    orders = get_orders()
+    # print(orders)
+    okex_usdt_usdk_orders = orders[orders.contract == 'okex/usdt.usdk']
+    # print(okex_usdt_usdk_orders)
+    return okex_usdt_usdk_orders
+
+def cancle_orders(exchange_oids):
+    for exchange_oid in exchange_oids:
+        print('撤销订单：{}'.format(exchange_oid))
+        r = api_call( 'DELETE', '/{}/orders'.format( account ), params={'exchange_oid': exchange_oid} )
+        pprint( r.json(), width=100 )
 
 import time,os,math
 if __name__ == '__main__':
@@ -68,12 +81,24 @@ if __name__ == '__main__':
         account = os.getenv('MOCK')
 
     print(account)
-    cancle_all_orders()
+
+    print('查询okex/usdt.usdk订单')
+    okex_usdt_usdk_orders = get_okex_usdt_usdk_orders()
+    print(okex_usdt_usdk_orders)
+    exchange_oids = okex_usdt_usdk_orders.exchange_oid
+
+    print('取消okex/usdt.usdk挂单')
+    cancle_orders(exchange_oids)
+
     if PRODUCTION:
         time.sleep(5)
 
     balance = get_balance( account )
     print(balance)
+
+    buy_price = 1.0005
+    sell_price = 1.0010
+    max_amount = 20
 
     while True:
         balance = get_balance( account )
@@ -81,17 +106,27 @@ if __name__ == '__main__':
 
         last,ask,bid = usdt_usdk()
         #print(last,ask,bid)
-        buy_price = 1.0005
-        sell_price = 1.0010
 
-        if last >=buy_price and balance.at['usdk','available']>1:
-            amount = math.floor(balance.at['usdk','available']/buy_price *100)/100
-            print( 'BUY usdt ,price:{},amount:{}'.format(buy_price,amount))
-            buy(buy_price,amount)
+        okex_usdt_usdk_orders = get_okex_usdt_usdk_orders()
 
-        elif last<sell_price and balance.at['usdt','available']>1:
-            amount = math.floor(balance.at['usdt','available'] *100)/100
-            print('SELL usdt ,price:{},amount:{}'.format(sell_price, amount))
-            sell(sell_price,amount)
+        if okex_usdt_usdk_orders[okex_usdt_usdk_orders.bs == 's'].empty:
+            #若没有挂卖单
+            if last < sell_price and balance.at['usdt', 'available'] > 1:
+                amount = math.floor( balance.at['usdt', 'available'] * 100 ) / 100
+                # 限制最大下单数量
+                if amount > max_amount:
+                    amount = max_amount
+                print( 'SELL usdt ,price:{},amount:{}'.format( sell_price, amount ) )
+                sell( sell_price, amount )
+
+        if okex_usdt_usdk_orders[okex_usdt_usdk_orders.bs == 'b'].empty:
+            # 若没有买单
+            if last >=buy_price and balance.at['usdk','available']>1:
+                amount = math.floor(balance.at['usdk','available']/buy_price *100)/100
+                #限制最大下单数量
+                if amount > max_amount:
+                    amount = max_amount
+                print( 'BUY usdt ,price:{},amount:{}'.format(buy_price,amount))
+                buy(buy_price,amount)
 
         time.sleep(5)

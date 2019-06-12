@@ -13,6 +13,7 @@ import hmac
 import hashlib
 
 import time,os
+from pprint import pprint
 
 class Secret:
     ot_key = os.getenv('OT_KEY')
@@ -65,37 +66,41 @@ def api_call(method, endpoint, params=None, data=None, timeout=15, host='https:/
     res = requests.request(method, url=url, data=json_str, params=params, headers=headers, timeout=timeout)
     return res
 
+import pandas as pd
 
 def demo(account):
     print('查看账户信息')
     r = api_call('GET', '/{}/info'.format(account))
-    print(r.json())
+    pprint(r.json(), width=100)
 
     print('撤销所有订单')
     r = api_call('DELETE', '/{}/orders/all'.format(account))
-    print(r.json())
+    pprint(r.json(), width=100)
 
     print('下单')
     r = api_call('POST', '/{}/orders'.format(account),
                  data={'contract': 'okex/btc.usdt', 'price': 10, 'bs': 'b', 'amount': 1, 'options': {'close': True}})
-    print(r.json())
+    pprint(r.json(), width=100)
     assert r.json()['client_oid']
     exg_oid = r.json()['exchange_oid']
 
-    time.sleep( 3 )
+    time.sleep( 5 )
     print('查询挂单 应该有一个挂单')
     r = api_call('GET', '/{}/orders'.format(account))
-    print(r.json())
+    pprint(r.json(), width=100)
     assert len(r.json()) == 1
+
+    order = pd.DataFrame(r.json())
+    print(order)
 
     print('用 exchange oid撤单')
     r = api_call('DELETE', '/{}/orders'.format(account), params={'exchange_oid': exg_oid})
-    print(r.json())
+    pprint(r.json(), width=100)
 
     time.sleep(3)
     print('查询挂单 应该没有挂单')
     r = api_call('GET', '/{}/orders'.format(account))
-    print(r.json())
+    pprint(r.json(), width=100)
     assert len(r.json()) == 0
 
 
