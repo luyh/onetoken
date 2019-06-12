@@ -6,6 +6,18 @@ from pprint import pprint
 import requests
 import pandas as pd
 from demo_private import api_call
+import time,os,math
+
+PRODUCTION = os.getenv( 'PRODUCTION' )
+
+print( 'PRODUCTION:', PRODUCTION )
+
+if PRODUCTION:
+    account = os.getenv( 'ACCOUNT' )
+else:
+    account = os.getenv( 'MOCK' )
+
+print( account )
 
 def usdt_usdk():
     res = requests.get( 'https://1token.trade/api/v1/quote/single-tick/okex/usdt.usdk' )
@@ -39,14 +51,14 @@ def get_balance(account):
     position.index = position['contract']
     return position
 
-def buy(price ,amount):
+def buy(price ,amount,contract='okex/usdt.usdk'):
     r = api_call( 'POST', '/{}/orders'.format( account ),
-                  data={'contract': 'okex/usdt.usdk', 'price': price, 'bs': 'b', 'amount': amount} )
+                  data={'contract': contract, 'price': price, 'bs': 'b', 'amount': amount} )
     print( r.json() )
 
-def sell(price ,amount):
+def sell(price ,amount,contract='okex/usdt.usdk'):
     r = api_call( 'POST', '/{}/orders'.format( account ),
-                  data={'contract': 'okex/usdt.usdk', 'price': price, 'bs': 's', 'amount': amount} )
+                  data={'contract': contract, 'price': price, 'bs': 's', 'amount': amount} )
     print( r.json() )
 
 def get_orders():
@@ -70,47 +82,38 @@ def cancle_orders(exchange_oids):
         r = api_call( 'DELETE', '/{}/orders'.format( account ), params={'exchange_oid': exchange_oid} )
         pprint( r.json(), width=100 )
 
-import time,os,math
-if __name__ == '__main__':
-    PRODUCTION = os.getenv('PRODUCTION')
-    print('PRODUCTION:',PRODUCTION)
 
-    if PRODUCTION:
-        account = os.getenv('ACCOUNT')
-    else:
-        account = os.getenv('MOCK')
-
-    print(account)
-
-    print('查询okex/usdt.usdk订单')
-    okex_usdt_usdk_orders = get_okex_usdt_usdk_orders()
-    print(okex_usdt_usdk_orders)
-    exchange_oids = okex_usdt_usdk_orders.exchange_oid
-
-    print('取消okex/usdt.usdk挂单')
-    cancle_orders(exchange_oids)
-
-    if PRODUCTION:
-        time.sleep(5)
-
-    balance = get_balance( account )
-    print(balance)
+def main():
 
     buy_price = 1.0005
     sell_price = 1.0010
     max_amount = 20
 
+    print( '查询okex/usdt.usdk订单' )
+    okex_usdt_usdk_orders = get_okex_usdt_usdk_orders()
+    print( okex_usdt_usdk_orders )
+    exchange_oids = okex_usdt_usdk_orders.exchange_oid
+
+    print( '取消okex/usdt.usdk挂单' )
+    cancle_orders( exchange_oids )
+
+    if PRODUCTION:
+        time.sleep( 5 )
+
+    balance = get_balance( account )
+    print( balance )
+
     while True:
         balance = get_balance( account )
-        #print(available)
+        # print(available)
 
-        last,ask,bid = usdt_usdk()
-        #print(last,ask,bid)
+        last, ask, bid = usdt_usdk()
+        # print(last,ask,bid)
 
         okex_usdt_usdk_orders = get_okex_usdt_usdk_orders()
 
         if okex_usdt_usdk_orders[okex_usdt_usdk_orders.bs == 's'].empty:
-            #若没有挂卖单
+            # 若没有挂卖单
             if last < sell_price and balance.at['usdt', 'available'] > 1:
                 amount = math.floor( balance.at['usdt', 'available'] * 100 ) / 100
                 # 限制最大下单数量
@@ -121,12 +124,16 @@ if __name__ == '__main__':
 
         if okex_usdt_usdk_orders[okex_usdt_usdk_orders.bs == 'b'].empty:
             # 若没有买单
-            if last >=buy_price and balance.at['usdk','available']>1:
-                amount = math.floor(balance.at['usdk','available']/buy_price *100)/100
-                #限制最大下单数量
+            if last >= buy_price and balance.at['usdk', 'available'] > 1:
+                amount = math.floor( balance.at['usdk', 'available'] / buy_price * 100 ) / 100
+                # 限制最大下单数量
                 if amount > max_amount:
                     amount = max_amount
-                print( 'BUY usdt ,price:{},amount:{}'.format(buy_price,amount))
-                buy(buy_price,amount)
+                print( 'BUY usdt ,price:{},amount:{}'.format( buy_price, amount ) )
+                buy( buy_price, amount )
 
-        time.sleep(5)
+        time.sleep( 5 )
+
+
+if __name__ == '__main__':
+    main()
