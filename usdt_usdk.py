@@ -90,15 +90,17 @@ if __name__ == '__main__':
         last,ask,bid = usdt_usdk()
 
         #print(last,ask,bid)
+        buy_price = 1.0005
+        sell_price = 1.0009
 
-        if last >=1.0005 and available['usdk']>1:
-            amount = math.floor(available['usdk']/1.0005 *100)/100
-            print( 'buy usdt ,price:1.0005,amount:',amount)
-            buy(1.0005,amount)
+        if last >=buy_price and available['usdk']>1:
+            amount = math.floor(available['usdk']/buy_price *100)/100
+            print( 'BUY usdt ,price:{},amount:{}'.format(buy_price,amount))
+            buy(buy_price,amount)
 
-        elif last<1.0010 and available['usdt']>1:
+        elif last<sell_price and available['usdt']>1:
             amount = math.floor(available['usdt'] *100)/100
-            print( 'sell usdt,price: 1.0010,amount:', amount)
-            sell(1.0010,amount)
+            print('SELL usdt ,price:{},amount:{}'.format(sell_price, amount))
+            sell(sell_price,amount)
 
         time.sleep(5)
