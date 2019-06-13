@@ -135,7 +135,7 @@ def main():
             if okex_usdt_usdk_orders[okex_usdt_usdk_orders.bs == 's'].empty:
                 # 若没有挂卖单
                 if last < sell_price and balance.at['usdt', 'available'] > 1:
-                    amount = math.floor( balance.at['usdt', 'available'] * 100 ) / 100
+                    amount = math.floor( balance.at['usdt', 'available'] * 1000 ) / 1000
                     # 限制最大下单数量
                     if amount > max_amount:
                         amount = max_amount
@@ -145,7 +145,7 @@ def main():
             if okex_usdt_usdk_orders[okex_usdt_usdk_orders.bs == 'b'].empty:
                 # 若没有买单
                 if last > buy_price and balance.at['usdk', 'available'] > 1:
-                    amount = math.floor( balance.at['usdk', 'available'] / buy_price * 100 ) / 100
+                    amount = math.floor( balance.at['usdk', 'available'] / buy_price * 1000 ) / 1000
                     # 限制最大下单数量
                     if amount > max_amount:
                         amount = max_amount
