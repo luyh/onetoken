@@ -85,9 +85,10 @@ def cancle_orders(exchange_oids):
 
 def main():
 
-    buy_price = 1.0005
-    sell_price = 1.0010
-    max_amount = 20
+    #TODO:将参数配成环境变量
+    buy_price = 1.0001
+    sell_price = 1.0002
+    max_amount = 200
 
     print( '查询okex/usdt.usdk订单' )
     okex_usdt_usdk_orders = get_okex_usdt_usdk_orders()
@@ -124,7 +125,7 @@ def main():
 
         if okex_usdt_usdk_orders[okex_usdt_usdk_orders.bs == 'b'].empty:
             # 若没有买单
-            if last >= buy_price and balance.at['usdk', 'available'] > 1:
+            if last > buy_price and balance.at['usdk', 'available'] > 1:
                 amount = math.floor( balance.at['usdk', 'available'] / buy_price * 100 ) / 100
                 # 限制最大下单数量
                 if amount > max_amount:
