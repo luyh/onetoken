@@ -126,10 +126,11 @@ def main():
                 print(balance)
                 print('last:{},ask:{},bid:{}'.format(last,ask,bid))
                 print('buy_price:{},sell_price:{}'.format(buy_price, sell_price))
-                count = count + 1
+
                 if count == 20:
                     count = 0
 
+            count = count + 1
 
             okex_usdt_usdk_orders = get_okex_usdt_usdk_orders()
             if okex_usdt_usdk_orders[okex_usdt_usdk_orders.bs == 's'].empty:
