@@ -92,6 +92,7 @@ def main():
     max_amount = 200
     skip_valumn = 10000  #买一量超 10K 挂单加chajia
 
+
     print( '查询okex/usdt.usdk订单' )
     okex_usdt_usdk_orders = get_okex_usdt_usdk_orders()
     print( okex_usdt_usdk_orders )
@@ -107,45 +108,47 @@ def main():
     print( balance )
 
     while True:
-        balance = get_balance( account )
-        # print(available)
+        try:
+            balance = get_balance( account )
+            # print(available)
 
-        last, ask, bid = usdt_usdk()
-        print('last:{},ask:{},bid:{}'.format(last,ask,bid))
-        #print(ask['volume'],bid['volume'] )
-        if bid['volume'] >skip_valumn:
-            buy_price = bid['price']+0.0001
-        else:
-            buy_price = bid['price']
+            last, ask, bid = usdt_usdk()
+            print('last:{},ask:{},bid:{}'.format(last,ask,bid))
+            #print(ask['volume'],bid['volume'] )
+            if bid['volume'] >skip_valumn:
+                buy_price = bid['price']+0.0001
+            else:
+                buy_price = bid['price']
 
-        if ask['price'] > buy_price + chajia:
-            sell_price = ask['price']
-        else:
-            sell_price = buy_price + chajia
+            if ask['price'] > buy_price + chajia:
+                sell_price = ask['price']
+            else:
+                sell_price = buy_price + chajia
 
-        print('buy_price:{},sell_price:{}'.format(buy_price,sell_price))
+            print('buy_price:{},sell_price:{}'.format(buy_price,sell_price))
 
-        okex_usdt_usdk_orders = get_okex_usdt_usdk_orders()
-        if okex_usdt_usdk_orders[okex_usdt_usdk_orders.bs == 's'].empty:
-            # 若没有挂卖单
-            if last < sell_price and balance.at['usdt', 'available'] > 1:
-                amount = math.floor( balance.at['usdt', 'available'] * 100 ) / 100
-                # 限制最大下单数量
-                if amount > max_amount:
-                    amount = max_amount
-                print( 'SELL usdt ,price:{},amount:{}'.format( sell_price, amount ) )
-                sell( sell_price, amount )
+            okex_usdt_usdk_orders = get_okex_usdt_usdk_orders()
+            if okex_usdt_usdk_orders[okex_usdt_usdk_orders.bs == 's'].empty:
+                # 若没有挂卖单
+                if last < sell_price and balance.at['usdt', 'available'] > 1:
+                    amount = math.floor( balance.at['usdt', 'available'] * 100 ) / 100
+                    # 限制最大下单数量
+                    if amount > max_amount:
+                        amount = max_amount
+                    print( 'SELL usdt ,price:{},amount:{}'.format( sell_price, amount ) )
+                    sell( sell_price, amount )
 
-        if okex_usdt_usdk_orders[okex_usdt_usdk_orders.bs == 'b'].empty:
-            # 若没有买单
-            if last > buy_price and balance.at['usdk', 'available'] > 1:
-                amount = math.floor( balance.at['usdk', 'available'] / buy_price * 100 ) / 100
-                # 限制最大下单数量
-                if amount > max_amount:
-                    amount = max_amount
-                print( 'BUY usdt ,price:{},amount:{}'.format( buy_price, amount ) )
-                buy( buy_price, amount )
-
+            if okex_usdt_usdk_orders[okex_usdt_usdk_orders.bs == 'b'].empty:
+                # 若没有买单
+                if last > buy_price and balance.at['usdk', 'available'] > 1:
+                    amount = math.floor( balance.at['usdk', 'available'] / buy_price * 100 ) / 100
+                    # 限制最大下单数量
+                    if amount > max_amount:
+                        amount = max_amount
+                    print( 'BUY usdt ,price:{},amount:{}'.format( buy_price, amount ) )
+                    buy( buy_price, amount )
+        except:
+            print('while thread error')
         time.sleep( 5 )
 
 
