@@ -26,8 +26,8 @@ def usdt_usdk():
     #pprint(res.json(), width=100)
 
     last = res.json()['last']
-    ask = res.json()['asks'][0]['price']
-    bid = res.json()['bids'][0]['price']
+    ask = res.json()['asks'][0]
+    bid = res.json()['bids'][0]
 
 
     #print(last,ask,bid)
@@ -86,9 +86,11 @@ def cancle_orders(exchange_oids):
 def main():
 
     #TODO:将参数配成环境变量
-    buy_price = 1.0001
-    sell_price = 1.0002
+    buy_price = 1.0000
+    sell_price = 1.0010
+    chajia = 0.0001
     max_amount = 200
+    skip_valumn = 10000  #买一量超 10K 挂单加chajia
 
     print( '查询okex/usdt.usdk订单' )
     okex_usdt_usdk_orders = get_okex_usdt_usdk_orders()
@@ -109,10 +111,21 @@ def main():
         # print(available)
 
         last, ask, bid = usdt_usdk()
-        # print(last,ask,bid)
+        print('last:{},ask:{},bid:{}'.format(last,ask,bid))
+        #print(ask['volume'],bid['volume'] )
+        if bid['volume'] >skip_valumn:
+            buy_price = bid['price']+0.0001
+        else:
+            buy_price = bid['price']
+
+        if ask['price'] > buy_price + chajia:
+            sell_price = ask['price']
+        else:
+            sell_price = buy_price + chajia
+
+        print('buy_price:{},sell_price:{}'.format(buy_price,sell_price))
 
         okex_usdt_usdk_orders = get_okex_usdt_usdk_orders()
-
         if okex_usdt_usdk_orders[okex_usdt_usdk_orders.bs == 's'].empty:
             # 若没有挂卖单
             if last < sell_price and balance.at['usdt', 'available'] > 1:
