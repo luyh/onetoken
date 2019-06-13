@@ -146,7 +146,7 @@ def main():
                     print( 'last:{},ask:{},bid:{}'.format( last, ask, bid ) )
                     print( 'buy_price:{},sell_price:{}'.format( buy_price, sell_price ) )
 
-                    amount = math.floor( balance.at['usdt', 'available'] * 1000 ) / 1000
+                    amount = math.floor( balance.at['usdt', 'available'] * 100 ) / 100
                     # 限制最大下单数量
                     if amount > max_amount:
                         amount = max_amount
@@ -161,7 +161,7 @@ def main():
                     print( 'last:{},ask:{},bid:{}'.format( last, ask, bid ) )
                     print( 'buy_price:{},sell_price:{}'.format( buy_price, sell_price ) )
 
-                    amount = math.floor( balance.at['usdk', 'available'] / buy_price * 1000 ) / 1000
+                    amount = math.floor( balance.at['usdk', 'available'] / buy_price * 100 ) / 100
                     # 限制最大下单数量
                     if amount > max_amount:
                         amount = max_amount
