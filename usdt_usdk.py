@@ -82,6 +82,7 @@ def cancle_orders(exchange_oids):
         r = api_call( 'DELETE', '/{}/orders'.format( account ), params={'exchange_oid': exchange_oid} )
         pprint( r.json(), width=100 )
 
+#todo:做成一个class类
 
 def main():
 
@@ -104,13 +105,27 @@ def main():
     if PRODUCTION:
         time.sleep( 5 )
 
-    count = 0
+    balance = get_balance( account )
+    last, ask, bid = usdt_usdk()
+
+    if bid['volume'] > skip_valumn:
+        buy_price = bid['price'] + 0.0001
+    else:
+        buy_price = bid['price']
+
+    if ask['price'] > buy_price + chajia:
+        sell_price = ask['price']
+    else:
+        sell_price = buy_price + chajia
+
+    print( balance )
+    print( 'last:{},ask:{},bid:{}'.format( last, ask, bid ) )
+    print( 'buy_price:{},sell_price:{}'.format( buy_price, sell_price ) )
+
     while True:
         try:
             balance = get_balance( account )
             last, ask, bid = usdt_usdk()
-
-
 
             if bid['volume'] >skip_valumn:
                 buy_price = bid['price']+0.0001
@@ -122,19 +137,15 @@ def main():
             else:
                 sell_price = buy_price + chajia
 
-            if count == 0:
-                print(balance)
-                print('last:{},ask:{},bid:{}'.format(last,ask,bid))
-                print('buy_price:{},sell_price:{}'.format(buy_price, sell_price))
-
-            count = count + 1
-            if count == 20:
-                count = 0
-
             okex_usdt_usdk_orders = get_okex_usdt_usdk_orders()
             if okex_usdt_usdk_orders[okex_usdt_usdk_orders.bs == 's'].empty:
                 # 若没有挂卖单
                 if last < sell_price and balance.at['usdt', 'available'] > 1:
+
+                    print( balance )
+                    print( 'last:{},ask:{},bid:{}'.format( last, ask, bid ) )
+                    print( 'buy_price:{},sell_price:{}'.format( buy_price, sell_price ) )
+
                     amount = math.floor( balance.at['usdt', 'available'] * 1000 ) / 1000
                     # 限制最大下单数量
                     if amount > max_amount:
@@ -145,6 +156,11 @@ def main():
             if okex_usdt_usdk_orders[okex_usdt_usdk_orders.bs == 'b'].empty:
                 # 若没有买单
                 if last > buy_price and balance.at['usdk', 'available'] > 1:
+
+                    print( balance )
+                    print( 'last:{},ask:{},bid:{}'.format( last, ask, bid ) )
+                    print( 'buy_price:{},sell_price:{}'.format( buy_price, sell_price ) )
+
                     amount = math.floor( balance.at['usdk', 'available'] / buy_price * 1000 ) / 1000
                     # 限制最大下单数量
                     if amount > max_amount:
