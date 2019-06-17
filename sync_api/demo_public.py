@@ -119,10 +119,22 @@ def eos_usdt_usdk_price():
 
     print(df)
 
-    print('debug')
+    buy = pd.DataFrame(index= ['eos'],columns=['usdt','usdk'])
+    sell = pd.DataFrame(index= ['eos'],columns=['usdt','usdk'])
+
+    eos_usdt_bid = df['bid_price'][df['contract'] == 'okex/eos.usdt'].values[0]
+    usdt_usdk_bid = df['bid_price'][df['contract'] == 'okex/usdt.usdk'].values[0]
+    eos_usdk_ask = df['ask_price'][df['contract'] == 'okex/eos.usdk'].values[0]
+
+    eos_usdk_bid = df['bid_price'][df['contract'] == 'okex/eos.usdk'].values[0]
+    usdt_usdk_ask = df['ask_price'][df['contract'] == 'okex/usdt.usdk'].values[0]
+    eos_usdt_ask = df['ask_price'][df['contract'] == 'okex/eos.usdt'].values[0]
+
     eos_usdt_usdk_eos = eos_usdt_bid * usdt_usdk_bid /eos_usdk_ask / 1.0002/1.0002/1.0002
     eos_usdk_usdt_eos = eos_usdk_bid / usdt_usdk_ask / eos_usdt_ask / 1.0002/1.0002/1.0002
 
+    print(eos_usdt_usdk_eos,eos_usdk_usdt_eos)
+    print('debug')
     if eos_usdt_usdk_eos >= 1:
         print( 'eos_usdt_usdk_eos', eos_usdt_usdk_eos )
 
