@@ -103,10 +103,10 @@ def main():
     contract = 'okex/eos.eth'
 
     # simple tick
-    get_contracts(date, 'ticks')
-    file_path = 'tick-simple-{}-{}.gz'.format(date, contract.replace('/', '-'))
-    download_simple_ticks(contract, date, file_path)
-    unzip_and_read('tick-simple-2018-11-11-okex-eos.eth.gz', 0.0001)
+    # get_contracts(date, 'ticks')
+    # file_path = 'tick-simple-{}-{}.gz'.format(date, contract.replace('/', '-'))
+    # download_simple_ticks(contract, date, file_path)
+    # csv = unzip_and_read('tick-simple-2018-11-11-okex-eos.eth.gz', 0.0001)
 
     # full tick
     # file_path = 'tick-full-{}-{}.gz'.format(date, contract.replace('/', '-'))
@@ -119,10 +119,10 @@ def main():
     # download_zhubis(contract, date, file_path)
     # unzip_and_read('zhubi-2018-11-11-okex-eos.eth.gz', 0.001)
 
-    # candle
-    # since = date
-    # until = '2018-11-12'
-    # download_and_print_candles(contract, since, until, '1m')
+    #candle
+    since = date
+    until = '2018-11-12'
+    download_and_print_candles(contract, since, until, '1m')
 
 
 if __name__ == '__main__':
