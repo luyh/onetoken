@@ -13,7 +13,7 @@ class OneToken():
     def __init__(self):
         self.exchanges = None
         self.contracts =  {}
-        self.tickets =  {}
+        self.all_exchange_tickets =  {}
 
     def get_time(self):
         res = requests.get('https://1token.trade/api/v1/basic/time')
@@ -59,20 +59,22 @@ class OneToken():
         with open('contracts.pk', 'rb') as f:
             self.contracts = pickle.load(f)
 
-    def get_ticket(self,exchange):
+    def get_exchange_tickets(self,exchange):
         res = requests.get('https://1token.trade/api/v1/quote/ticks?exchange={}'.format(exchange))
         #pprint(res.json()[:3], width=1000)
 
-        ticket = pd.DataFrame(res.json(),columns=['contract','last','asks','bids'])
+        tickets = pd.DataFrame(res.json(),columns=['contract','last','asks','bids'])
         #print(tickets)
-        return ticket
+        return tickets
 
-    def get_tickets(self):
-        tickets = {}
+    def get_all_exchanges_tickets(self):
         for exchange in self.exchanges['exchange']:
-            tickets[exchange] = self.get_ticket(exchange)
+            self.all_exchange_tickets[exchange] =self.get_exchange_tickets(exchange)
 
-        self.tickets = tickets
+    def get_single_ticket(self,exchange,contract):
+        res = requests.get('https://1token.trade/api/v1/quote/single-tick/{}/{}'.format(exchange,contract))
+        ticket = pd.DataFrame(res.json(),columns=['contract','last','asks','bids'])
+        return ticket
 
 
 def demo():
@@ -88,22 +90,17 @@ def demo():
     #onetoken.get_contracts()
     #onetoken.save_contracts()
     onetoken.load_contracts()
-    for contract in onetoken.contracts:
-        print(contract)
+    print(onetoken.contracts)
 
-    ticket = onetoken.get_ticket('okex')
+    # tickets = onetoken.get_exchange_tickets('okex')
+    # print(tickets)
+
+    # onetoken.get_all_exchanges_tickets()
+    # print(onetoken.all_exchange_tickets)
+
+    ticket = onetoken.get_single_ticket('okef','btc.usd.q')
     print(ticket)
 
-    tickets= onetoken.get_tickets()
-    for exchange in onetoken.exchanges['exchange']:
-        print(tickets[exchange])
-
-    #
-    # res = requests.get('https://1token.trade/api/v1/quote/single-tick/okef/btc.usd.q')
-    # pprint(res.json(), width=1000)
-    #
-    # res = requests.get('https://1token.trade/api/v1/quote/single-tick/okex/btc.usdt')
-    # pprint(res.json(), width=1000)
 
     print('demo')
 
