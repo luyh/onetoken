@@ -78,9 +78,12 @@ def createGraph(matrix):
         graph.edges.append(newEdge)
     return graph
 
+from sync_api.demo_public import OneToken
 if __name__ == '__main__':
     DEBUG = True
-    exchange = ['okex',]
+    onetoken = OneToken()
+
+    exchange = onetoken.exchanges
     nodes = ['eos','btc']
     currency = ['usdt','usdk']
     contracts = ['eos.usdt', 'eos.usdk', 'usdt.usdk']

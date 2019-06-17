@@ -12,8 +12,20 @@ from demo_private import api_call
 class OneToken():
     def __init__(self):
         self.exchanges = None
-        self.contracts =  {}
-        self.all_exchange_tickets =  {}
+        self.contracts = {}
+        self.all_exchanges_tickets =  {}
+
+        self.init()
+    def init(self):
+        try:
+            self.load_exchanges()
+        except:
+            self.get_exchanges()
+
+        try:
+            self.load_contracts()
+        except:
+            self.get_contracts()
 
     def get_time(self):
         res = requests.get('https://1token.trade/api/v1/basic/time')
@@ -42,14 +54,9 @@ class OneToken():
         return df
 
     def get_contracts(self):
-        t = self.get_time()
-        print(t)
-
-        contracts = {}
         for exchange in self.exchanges['exchange']:
             contract = self.get_contract(exchange)
-            contracts[exchange] = contract  #
-        self.contracts = contracts
+            self.contracts[exchange] = contract  #
 
     def save_contracts(self):
         with open('contracts.pk', 'w') as f:
@@ -59,7 +66,7 @@ class OneToken():
         with open('contracts.pk', 'rb') as f:
             self.contracts = pickle.load(f)
 
-    def get_exchange_tickets(self,exchange):
+    def get_quote_tickets(self,exchange):
         res = requests.get('https://1token.trade/api/v1/quote/ticks?exchange={}'.format(exchange))
         #pprint(res.json()[:3], width=1000)
 
@@ -69,7 +76,7 @@ class OneToken():
 
     def get_all_exchanges_tickets(self):
         for exchange in self.exchanges['exchange']:
-            self.all_exchange_tickets[exchange] =self.get_exchange_tickets(exchange)
+            self.all_exchanges_tickets[exchange] =self.get_quote_tickets(exchange)
 
     def get_single_ticket(self,exchange,contract):
         res = requests.get('https://1token.trade/api/v1/quote/single-tick/{}/{}'.format(exchange,contract))
@@ -81,22 +88,16 @@ def demo():
     onetoken = OneToken()
 
     #获取支持的交易所
-    #onetoken.get_exchanges()
-    #onetoken.save_exchanges()
-    onetoken.load_exchanges()
     print(onetoken.exchanges)
 
     #获取各交易所交易对信息
-    #onetoken.get_contracts()
-    #onetoken.save_contracts()
-    onetoken.load_contracts()
     print(onetoken.contracts)
 
-    # tickets = onetoken.get_exchange_tickets('okex')
-    # print(tickets)
+    tickets = onetoken.get_quote_tickets('okex')
+    print(tickets)
 
-    # onetoken.get_all_exchanges_tickets()
-    # print(onetoken.all_exchange_tickets)
+    onetoken.get_all_exchanges_tickets()
+    print(onetoken.all_exchanges_tickets)
 
     ticket = onetoken.get_single_ticket('okef','btc.usd.q')
     print(ticket)
