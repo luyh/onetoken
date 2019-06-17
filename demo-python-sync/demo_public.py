@@ -4,26 +4,70 @@
 from pprint import pprint
 
 import requests
+import pandas as pd
+import pickle
 
 from demo_private import api_call
-def demo():
+
+def get_time():
     res = requests.get('https://1token.trade/api/v1/basic/time')
     pprint(res.json())
 
+def get_exchanges():
+    # 获取交易所信息
     res = requests.get('https://1token.trade/api/v1/basic/support-exchanges-v2')
-    pprint(res.json(), width=240)
+    # pprint(res.json(), width=240)
+    exchanges = pd.DataFrame(res.json(), columns=['exchange', 'alias', 'sub_markets', 'sub_markets_alias', 'type'])
+    #print(exchanges)
+    return exchanges
 
-    res = requests.get('https://1token.trade/api/v1/basic/contracts?exchange=okef')
-    pprint(res.json(), width=1000)
+def get_contract(exchange):
+    res = requests.get('https://1token.trade/api/v1/basic/contracts?exchange={}'.format(exchange))
+    # pprint(res.json(), width=1000)
+    df = pd.DataFrame(res.json(),
+                                       columns=['id', 'name', 'symbol', 'unit_amount', 'min_change', 'min_amount'])  #
+    #print(contracts[exchange])
+    return df
+
+def get_contracts(exchanges):
+    t = get_time()
+    print(t)
+
+    contracts = {}
+    for exchange in exchanges['exchange']:
+        contract = get_contract(exchange)
+        contracts[exchange] = contract  #
+    return contracts
+
+def demo():
+    #获取支持的交易所
+    exchanges = get_exchanges()
+    exchanges.to_csv('exchanges.csv')
+    print(exchanges)
+
+    #获取各交易所交易对信息
+    contracts = get_contracts(exchanges)
+    contracts
+
+    #print(contracts)
+    # for exchange in exchanges['exchange']:
+    #     print(contracts[exchange])
+
 
     res = requests.get('https://1token.trade/api/v1/quote/ticks?exchange=okef')
-    pprint(res.json()[:3], width=1000)
+    #pprint(res.json()[:3], width=1000)
 
-    res = requests.get('https://1token.trade/api/v1/quote/single-tick/okef/btc.usd.q')
-    pprint(res.json(), width=1000)
+    tickets = pd.DataFrame(res.json(),columns=['contract','last','asks','bids'])
+    print(tickets)
 
-    res = requests.get('https://1token.trade/api/v1/quote/single-tick/okex/btc.usdt')
-    pprint(res.json(), width=1000)
+    #
+    # res = requests.get('https://1token.trade/api/v1/quote/single-tick/okef/btc.usd.q')
+    # pprint(res.json(), width=1000)
+    #
+    # res = requests.get('https://1token.trade/api/v1/quote/single-tick/okex/btc.usdt')
+    # pprint(res.json(), width=1000)
+
+    print('demo')
 
 def eos_usdt_usdk_price():
     res = requests.get('https://1token.trade/api/v1/quote/single-tick/okex/eos.usdt')
@@ -113,10 +157,9 @@ if __name__ == '__main__':
     r = api_call( 'GET', '/{}/info'.format( account ) )
     print( r.json() )
 
-
-    count = 0
-    profit = 1
-    print('start')
-    while True:
-        eos_usdt_usdk_price()
-        time.sleep(1)
+    demo()
+    print('end')
+    # print('start')
+    # while True:
+    #     eos_usdt_usdk_price()
+    #     time.sleep(1)

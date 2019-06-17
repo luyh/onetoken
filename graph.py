@@ -33,6 +33,10 @@ class Edge:
 
     def get_price(self):
         res = requests.get( 'https://1token.trade/api/v1/quote/single-tick/okex/{}'.format(self.contract) )
+        print(res.json())
+
+        df = pd.DataFrame()
+
 
         if not self.invert:
             self.price = res.json()['bids'][0]['price']
@@ -76,8 +80,9 @@ def createGraph(matrix):
 
 if __name__ == '__main__':
     DEBUG = True
-
-    nodes = ['eos','usdt','usdk','test']
+    exchange = ['okex',]
+    nodes = ['eos','btc']
+    currency = ['usdt','usdk']
     contracts = ['eos.usdt', 'eos.usdk', 'usdt.usdk']
 
     print('nodes:',nodes)
@@ -148,14 +153,9 @@ if __name__ == '__main__':
         markets[edge] = graph.edges[edge].value
 
         df = pd.DataFrame(graph.edges[edge].value,index= [edge[0]],columns=[edge[1]])
-        #print(df)
+        print(df)
+        markets_df.join(df,how='outer')
 
-        if markets_df.empty:
-            #print(edge)
-            #markets_df = df
-            markets_df = df
-        else:
-            markets_df = pd.merge(markets_df,df,left_index=True, right_index=True ,how='outer' )
     print(markets)
     print(markets_df)
 
