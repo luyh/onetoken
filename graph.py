@@ -1,55 +1,51 @@
 import requests
 import itertools
 import pandas as pd
+from sync_api.demo_public import OneToken
 # 图的节点结构
 class Node:
-    def __init__(self, quote):
-        self.quote = quote      # 节点值
+    def __init__(self, exchange,name):
+        self.exchange = exchange
+        self.name = name      # 节点值
 
-        self.come = 0           # 节点入度
-        self.out = 0            # 节点出度
-        self.nexts = []         # 节点的邻居节点
-        self.edges = []         # 在节点为from的情况下，边的集合
+        self.come= {}      #入节点，边：dict:名称:节点，边 ,入度
+        self.out = {}      #出节点，边：dict:名称:节点，边 ,入度
+        self.come['count'] = 0
+        self.out['count'] = 0
+
 
 
 
 # 图的边结构
 class Edge:
-    def __init__(self,fro, to,contract,invert):
-        self.weight = weight        # 边的权重
+    def __init__(self,fro, to ,rate):
         self.fro = fro              # 边的from节点
         self.to = to                # 边的to节点
 
-        self.contract = contract
-        self.invert = invert
-
-        self.taker_commition = 0.0002 #吃单手续费
-        self.maker_commition = 0.0001 #挂单手续费
-
-        self.price = None
-
-        self.value = None
+        self.rate = rate
 
 
-    def get_price(self):
-        res = requests.get( 'https://1token.trade/api/v1/quote/single-tick/okex/{}'.format(self.contract) )
-        print(res.json())
+def get_price(contract):
+    res = requests.get( 'https://1token.trade/api/v1/quote/single-tick/okex/{}'.format(contract) )
+    #print(res.json())
 
-        df = pd.DataFrame()
+    bid = res.json()['bids'][0]['price']
+    ask = res.json()['asks'][0]['price']
 
-
-        if not self.invert:
-            self.price = res.json()['bids'][0]['price']
-        else:
-            self.price = 1 / res.json()['asks'][0]['price']
-
-        self.value = self.price * (1 - self.taker_commition)
+    return bid,ask
+    #
+    # if not self.invert:
+    #     self.price = res.json()['bids'][0]['price']
+    # else:
+    #     self.price = 1 / res.json()['asks'][0]['price']
+    #
+    # self.value = self.price * (1 - self.taker_commition)
 
 # 图结构
 class Graph:
     def __init__(self):
         self.nodes = {}     # 图的所有节点集合  字典形式：{节点编号：节点}
-        self.edges = []     # 图的边集合
+        self.edges = {}    # 图的边集合
 
 
 # 生成图结构
@@ -58,6 +54,7 @@ class Graph:
 #   [...]
 # ]
 
+'''
 def createGraph(matrix):
     graph = Graph()
     for edge in matrix:
@@ -77,106 +74,60 @@ def createGraph(matrix):
         fromNode.edges.append(newEdge)
         graph.edges.append(newEdge)
     return graph
+'''
+def createGraph():
+    pass
 
-from sync_api.demo_public import OneToken
-if __name__ == '__main__':
+def demo():
     DEBUG = True
     onetoken = OneToken()
 
     exchange = onetoken.exchanges
-    nodes = ['eos','btc']
-    currency = ['usdt','usdk']
+    contracts1 = onetoken.contracts
+
     contracts = ['eos.usdt', 'eos.usdk', 'usdt.usdk']
-
-    print('nodes:',nodes)
-    print('contracts:',contracts)
-
-
-    pairs = {}
-    for contract in contracts:
-        pairs[contract] = contract.split('.')
-    #print('pairs:',pairs)
-    #print(pairs.values())
 
     graph = Graph()
 
-    for node in nodes:
-        graph.nodes[node] = Node(node)
+    for contract in contracts:
+        pair = contract.split( '.' )
+        bid, ask = get_price( contract )
+        rates = {}
+        rates['{}.{}'.format( pair[0], pair[1] )] = bid * (1 - 0.00002)
+        rates['{}.{}'.format( pair[1], pair[0] )] = 1 / ask * (1 - 0.00002)
 
-    '''
-    product 笛卡尔积　　（有放回抽样排列）
+        graph.nodes[pair[0]] = Node('okex', pair[0] )
+        graph.nodes[pair[1]] = Node( 'okex',pair[1] )
 
-    permutations 排列　　（不放回抽样排列）
-    
-    combinations 组合,没有重复　　（不放回抽样组合）
-    
-    combinations_with_replacement 组合,有重复　　（有放回抽样组合）
-    '''
-
-    for edge in itertools.permutations( nodes, 2 ):
-        #print('edge:',edge)
-        fro = edge[0]
-        to = edge[1]
-        #print(fro,to)
-        if [fro,to] in pairs.values():
-            weight = 1
-            contract = list(pairs.keys())[list(pairs.values()).index([fro,to])]
-            invert = False
-
-        elif [to,fro] in pairs.values():
-            weight = 1
-            contract = list( pairs.keys() )[list( pairs.values() ).index( [to, fro] )]
-            invert = True
-
-        else:
-            weight = 0
-            contract = None
-            invert = None
-
-        #print('fro:{},to:{},weight:{},contract:{},invert:{}'.format(fro,to,weight,contract,invert))
-
-        if weight == 1:
-            fromNode = graph.nodes[fro]
-            toNode = graph.nodes[to]
-
-            newEdge = Edge( fromNode, toNode,contract,invert )
-            fromNode.nexts.append( toNode )
-            fromNode.out += 1
-            toNode.come += 1
-            fromNode.edges.append( newEdge )
-            graph.edges.append(newEdge)
+        Node1 = graph.nodes[pair[0]]
+        Node2 = graph.nodes[pair[1]]
 
 
-    markets = {}
-    markets_df = pd.DataFrame()
+        for edge in itertools.permutations( pair, 2 ):
+            Node0 = graph.nodes[edge[0]]
+            Node1 = graph.nodes[edge[1]]
+            rate = rates['{}.{}'.format(edge[0], edge[1])]
+
+            newEdge = Edge( Node0, Node1, rate )
+
+            Node0.out[edge[1]] = {}
+            Node0.out[edge[1]]['node'] = Node1
+            Node0.out[edge[1]]['rate'] = rate
+            Node0.out[edge[1]]['edge'] = newEdge
+            Node0.out['count'] +=1
+
+            Node1.come[edge[0]] = {}
+            Node1.come[edge[0]]['node'] = Node0
+            Node1.come[edge[0]]['edge'] = newEdge
+            Node1.come['count'] +=1
+
+            graph.edges[edge[0], edge[1]] = ( newEdge )
 
 
-    for i in range(len(graph.edges)):
-        graph.edges[i].get_price()
-
-        # print(graph.edges[edge].fro.quote , graph.edges[edge].to.quote,
-        #       graph.edges[edge].price,graph.edges[edge].value)
 
 
-        value= graph.edges[i].value
-
-        markets_df.ix[i,'contract'] = graph.edges[i].value
-        print(markets_df.df)
-
-        df = pd.DataFrame(graph.edges[edge].value,index= [edge[0]],columns=[edge[1]])
-        print(df)
-        markets_df.join(df,how='outer')
-
-    print(markets)
-    print(markets_df)
-
-    usdt_eos = graph.edges['usdt','eos'].value
-
-    print(usdt_eos)
+    print( 'End' )
 
 
-    #todo: 用DataFrame表达 报价
-    #todo: 图的遍利
-
-
-    print('End')
+if __name__ == '__main__':
+    demo()

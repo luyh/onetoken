@@ -21,11 +21,13 @@ class OneToken():
             self.load_exchanges()
         except:
             self.get_exchanges()
+            self.save_exchanges()
 
         try:
             self.load_contracts()
         except:
             self.get_contracts()
+            self.save_contracts()
 
     def get_time(self):
         res = requests.get('https://1token.trade/api/v1/basic/time')
@@ -45,7 +47,7 @@ class OneToken():
     def load_exchanges(self):
         self.exchanges = pd.read_csv('exchanges.csv')
 
-    def get_contract(exchange):
+    def get_contract(self,exchange):
         res = requests.get('https://1token.trade/api/v1/basic/contracts?exchange={}'.format(exchange))
         # pprint(res.json(), width=1000)
         df = pd.DataFrame(res.json(),
@@ -59,7 +61,7 @@ class OneToken():
             self.contracts[exchange] = contract  #
 
     def save_contracts(self):
-        with open('contracts.pk', 'w') as f:
+        with open('contracts.pk', 'wb') as f:
             pickle.dump(self.contracts, f)
 
     def load_contracts(self):
