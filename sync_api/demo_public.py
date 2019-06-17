@@ -102,44 +102,24 @@ def demo():
     ticket = onetoken.get_single_ticket('okef','btc.usd.q')
     print(ticket)
 
-
-    print('demo')
-
 def eos_usdt_usdk_price():
-    res = requests.get('https://1token.trade/api/v1/quote/single-tick/okex/eos.usdt')
-    #pprint(res.json(), width=1000)
+    onetoken = OneToken()
+    okex_eos_usdt = onetoken.get_single_ticket('okex','eos.usdt')
+    okex_eos_usdk = onetoken.get_single_ticket('okex','eos.usdk')
+    okex__usdt_usdk = onetoken.get_single_ticket('okex','usdt.usdk')
 
-    #卖一价
-    eos_usdt_ask = res.json()['asks'][0]['price']
-    #print('eos_usdt_ask:',eos_usdt_ask)
+    df = pd.concat([okex_eos_usdt, okex_eos_usdk,okex__usdt_usdk])
 
-    #买一价
-    eos_usdt_bid = res.json()['bids'][0]['price']
-    #print('eos_usdt_bid:',eos_usdt_bid)
+    df['ask_price'] = list(map(lambda x: x['price'], df['asks']))
+    df['ask_volume'] = list(map(lambda x: x['volume'], df['asks']))
+    df['bid_price'] = list(map(lambda x: x['price'], df['bids']))
+    df['bid_volume'] = list(map(lambda x: x['volume'], df['bids']))
+    del df['asks']
+    del df['bids']
 
-    res = requests.get( 'https://1token.trade/api/v1/quote/single-tick/okex/eos.usdk' )
-    #pprint(res.json(), width=1000)
+    print(df)
 
-    #卖一价
-    eos_usdk_ask = res.json()['asks'][0]['price']
-    #print('eos_usdk_ask:',eos_usdk_ask)
-
-    #买一价
-    eos_usdk_bid = res.json()['bids'][0]['price']
-    #print('eos_usdk_bid:',eos_usdk_bid)
-
-
-    res = requests.get( 'https://1token.trade/api/v1/quote/single-tick/okex/usdt.usdk' )
-    #pprint(res.json(), width=1000)
-
-    #卖一价
-    usdt_usdk_ask = res.json()['asks'][0]['price']
-    #print('usdt_usdk_ask:',usdt_usdk_ask)
-
-    #买一价
-    usdt_usdk_bid = res.json()['bids'][0]['price']
-    #print('usdt_usdk_bid:',usdt_usdk_bid)
-
+    print('debug')
     eos_usdt_usdk_eos = eos_usdt_bid * usdt_usdk_bid /eos_usdk_ask / 1.0002/1.0002/1.0002
     eos_usdk_usdt_eos = eos_usdk_bid / usdt_usdk_ask / eos_usdt_ask / 1.0002/1.0002/1.0002
 
@@ -193,7 +173,7 @@ if __name__ == '__main__':
     r = api_call( 'GET', '/{}/info'.format( account ) )
     print( r.json() )
 
-    demo()
+    eos_usdt_usdk_price()
     print('end')
     # print('start')
     # while True:

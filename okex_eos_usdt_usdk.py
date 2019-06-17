@@ -16,43 +16,17 @@ def eos_usdt_usdk_price():
     df1 = pd.DataFrame(res.json(),columns=['asks','bids','contract','last'])
     #print(df1)
 
-    #卖一价
-    eos_usdt_ask = res.json()['asks'][0]['price']
-    #print('eos_usdt_ask:',eos_usdt_ask)
-
-    #买一价
-    eos_usdt_bid = res.json()['bids'][0]['price']
-    #print('eos_usdt_bid:',eos_usdt_bid)
-
     res = requests.get( 'https://1token.trade/api/v1/quote/single-tick/okex/eos.usdk' )
     #pprint(res.json(), width=1000)
     df2 = pd.DataFrame(res.json(),columns=['asks','bids','contract','last'])
     df = pd.concat([df1,df2])
     #print(df)
 
-    #卖一价
-    eos_usdk_ask = res.json()['asks'][0]['price']
-    #print('eos_usdk_ask:',eos_usdk_ask)
-
-    #买一价
-    eos_usdk_bid = res.json()['bids'][0]['price']
-    #print('eos_usdk_bid:',eos_usdk_bid)
-
     res = requests.get( 'https://1token.trade/api/v1/quote/single-tick/okex/usdt.usdk' )
     #pprint(res.json(), width=1000)
 
     df3 = pd.DataFrame(res.json(),columns=['asks','bids','contract','last'])
     df = pd.concat([df,df3], ignore_index=True)
-
-    #卖一价
-    usdt_usdk_ask = res.json()['asks'][0]['price']
-    #print('usdt_usdk_ask:',usdt_usdk_ask)
-
-    #买一价
-    usdt_usdk_bid = res.json()['bids'][0]['price']
-    #print('usdt_usdk_bid:',usdt_usdk_bid)
-    #print(df)
-    #print(df['asks'])
 
     df['ask_price'] = list(map(lambda x: x['price'], df['asks']))
     df['ask_volume'] = list( map( lambda x: x['volume'], df['asks'] ) )
