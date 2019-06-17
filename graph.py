@@ -45,7 +45,7 @@ class Edge:
 class Graph:
     def __init__(self):
         self.nodes = {}     # 图的所有节点集合  字典形式：{节点编号：节点}
-        self.edges = {}     # 图的边集合
+        self.edges = []     # 图的边集合
 
 
 # 生成图结构
@@ -104,6 +104,7 @@ if __name__ == '__main__':
     
     combinations_with_replacement 组合,有重复　　（有放回抽样组合）
     '''
+
     for edge in itertools.permutations( nodes, 2 ):
         #print('edge:',edge)
         fro = edge[0]
@@ -135,17 +136,24 @@ if __name__ == '__main__':
             fromNode.out += 1
             toNode.come += 1
             fromNode.edges.append( newEdge )
-            graph.edges[fro,to] =  newEdge
+            graph.edges.append(newEdge)
+
 
     markets = {}
     markets_df = pd.DataFrame()
-    for edge in graph.edges.keys():
-        graph.edges[edge].get_price()
+
+
+    for i in range(len(graph.edges)):
+        graph.edges[i].get_price()
 
         # print(graph.edges[edge].fro.quote , graph.edges[edge].to.quote,
         #       graph.edges[edge].price,graph.edges[edge].value)
 
-        markets[edge] = graph.edges[edge].value
+
+        value= graph.edges[i].value
+
+        markets_df.ix[i,'contract'] = graph.edges[i].value
+        print(markets_df.df)
 
         df = pd.DataFrame(graph.edges[edge].value,index= [edge[0]],columns=[edge[1]])
         #print(df)
