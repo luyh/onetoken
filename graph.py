@@ -148,10 +148,9 @@ def demo():
 
             graph.path = pd.concat([graph.path,path])
 
-        # Node0.path['commition'] = 0.0003
-        # Node0.path['value'] = Node0.path['bid0_price'] * Node0.path['bid1_price'] * Node0.path['bid2_price'] * math.pow((1 - Node0.path['commition']), 3)
-
-            print('debug')
+        commition = 0.0003
+        graph.path['value'] = graph.path['to0_price'] * graph.path['to1_price'] * graph.path['to2_price'] * math.pow((1 - commition), 3)
+        print('debug')
 
     print( 'End' )
 
