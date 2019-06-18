@@ -26,6 +26,7 @@ class Edge:
 
 
 def get_price(contract):
+    print(contract)
     res = requests.get( 'https://1token.trade/api/v1/quote/single-tick/okex/{}'.format(contract) )
     #print(res.json())
 
@@ -84,11 +85,19 @@ def demo():
 
     exchange = onetoken.exchanges
     okex_contracts = onetoken.contracts['okex']['name']
-
-    #contracts = ['eos.usdt', 'eos.usdk', 'usdt.usdk','eos.btc']
+    #okex_tickets = onetoken.get_quote_tickets('okex')
+    #print(okex_tickets)
+    # okex_tickets['ask_price'] = list(map(lambda x: x['price'], okex_tickets['asks']))
+    # okex_tickets['ask_volume'] = list(map(lambda x: x['volume'], okex_tickets['asks']))
+    # okex_tickets['bid_price'] = list(map(lambda x: x['price'], okex_tickets['bids']))
+    # okex_tickets['bid_volume'] = list(map(lambda x: x['volume'], okex_tickets['bids']))
+    # del okex_tickets['asks']
+    # del okex_tickets['bids']
+    # print(okex_tickets)
+    # print('debug')
 
     graph = Graph()
-
+    print(okex_contracts)
     for contract in okex_contracts:
         pair = contract.split( '.' )
         bid, ask = get_price( contract )
