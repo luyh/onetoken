@@ -13,9 +13,6 @@ class Node:
         self.come['count'] = 0
         self.out['count'] = 0
 
-
-
-
 # 图的边结构
 class Edge:
     def __init__(self,fro, to,rate = {}):
@@ -23,7 +20,6 @@ class Edge:
         self.to = to                # 边的to节点
 
         self.rate = rate
-
 
 def get_price(contract):
     print(contract)
@@ -95,22 +91,13 @@ def demo():
     del okex_tickets['bids']
     print(okex_tickets)
 
-
     graph = Graph()
 
     for contract in okex_contracts:
         pair = contract.split( '.' )
-        # bid, ask = get_price( contract )
-        # print('contract:{},bid:{},ask:{}'.format(contract,bid,ask))
 
-        # rates = {}
-        # rates['{}.{}'.format( pair[0], pair[1] )] = bid * (1 - 0.00002)
-        # rates['{}.{}'.format( pair[1], pair[0] )] = 1 / ask * (1 - 0.00002)
-        print(contract,'okex/'+contract)
         ask_price = okex_tickets['ask_price'][okex_tickets['contract'] == ('okex/'+contract )]
         bid_price = okex_tickets['bid_price'][okex_tickets['contract'] ==('okex/'+contract) ]
-
-        print(ask_price,bid_price)
 
         if not pair[0] in graph.nodes.keys():
             graph.nodes[pair[0]] = Node('okex', pair[0] )
@@ -119,9 +106,6 @@ def demo():
 
         Node0 = graph.nodes[pair[0]]
         Node1 = graph.nodes[pair[1]]
-
-        # newEdge0 = Edge( Node0, Node1, rates['{}.{}'.format( pair[0], pair[1] )] )
-        # newEdge1 = Edge(Node1, Node0, rates['{}.{}'.format(pair[1], pair[0])])
 
         newEdge0 = Edge( Node0, Node1)
         newEdge1 = Edge(Node1, Node0)
@@ -154,8 +138,6 @@ def demo():
 
         graph.edges[pair[0], pair[1]] = ( newEdge0 )
         graph.edges[pair[1], pair[0]] = (newEdge1)
-
-        print('debug')
 
     print( 'End' )
 
