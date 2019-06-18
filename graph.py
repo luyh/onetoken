@@ -18,7 +18,7 @@ class Node:
 
 # 图的边结构
 class Edge:
-    def __init__(self,fro, to ,rate):
+    def __init__(self,fro, to,rate = {}):
         self.fro = fro              # 边的from节点
         self.to = to                # 边的to节点
 
@@ -85,26 +85,32 @@ def demo():
 
     exchange = onetoken.exchanges
     okex_contracts = onetoken.contracts['okex']['name']
-    #okex_tickets = onetoken.get_quote_tickets('okex')
-    #print(okex_tickets)
-    # okex_tickets['ask_price'] = list(map(lambda x: x['price'], okex_tickets['asks']))
-    # okex_tickets['ask_volume'] = list(map(lambda x: x['volume'], okex_tickets['asks']))
-    # okex_tickets['bid_price'] = list(map(lambda x: x['price'], okex_tickets['bids']))
-    # okex_tickets['bid_volume'] = list(map(lambda x: x['volume'], okex_tickets['bids']))
-    # del okex_tickets['asks']
-    # del okex_tickets['bids']
-    # print(okex_tickets)
-    # print('debug')
+    okex_tickets = onetoken.get_quote_tickets('okex')
+    print(okex_tickets)
+    okex_tickets['ask_price'] = list(map(lambda x: x[0]['price'], okex_tickets['asks']))
+    okex_tickets['ask_volume'] = list(map(lambda x: x[0]['volume'], okex_tickets['asks']))
+    okex_tickets['bid_price'] = list(map(lambda x: x[0]['price'], okex_tickets['bids']))
+    okex_tickets['bid_volume'] = list(map(lambda x: x[0]['volume'], okex_tickets['bids']))
+    del okex_tickets['asks']
+    del okex_tickets['bids']
+    print(okex_tickets)
+
 
     graph = Graph()
-    print(okex_contracts)
+
     for contract in okex_contracts:
         pair = contract.split( '.' )
-        bid, ask = get_price( contract )
-        print('contract:{},bid:{},ask:{}'.format(contract,bid,ask))
-        rates = {}
-        rates['{}.{}'.format( pair[0], pair[1] )] = bid * (1 - 0.00002)
-        rates['{}.{}'.format( pair[1], pair[0] )] = 1 / ask * (1 - 0.00002)
+        # bid, ask = get_price( contract )
+        # print('contract:{},bid:{},ask:{}'.format(contract,bid,ask))
+
+        # rates = {}
+        # rates['{}.{}'.format( pair[0], pair[1] )] = bid * (1 - 0.00002)
+        # rates['{}.{}'.format( pair[1], pair[0] )] = 1 / ask * (1 - 0.00002)
+        print(contract,'okex/'+contract)
+        ask_price = okex_tickets['ask_price'][okex_tickets['contract'] == ('okex/'+contract )]
+        bid_price = okex_tickets['bid_price'][okex_tickets['contract'] ==('okex/'+contract) ]
+
+        print(ask_price,bid_price)
 
         if not pair[0] in graph.nodes.keys():
             graph.nodes[pair[0]] = Node('okex', pair[0] )
@@ -114,36 +120,42 @@ def demo():
         Node0 = graph.nodes[pair[0]]
         Node1 = graph.nodes[pair[1]]
 
-        newEdge0 = Edge( Node0, Node1, rates['{}.{}'.format( pair[0], pair[1] )] )
-        newEdge1 = Edge(Node1, Node0, rates['{}.{}'.format(pair[1], pair[0])])
+        # newEdge0 = Edge( Node0, Node1, rates['{}.{}'.format( pair[0], pair[1] )] )
+        # newEdge1 = Edge(Node1, Node0, rates['{}.{}'.format(pair[1], pair[0])])
+
+        newEdge0 = Edge( Node0, Node1)
+        newEdge1 = Edge(Node1, Node0)
+
+        newEdge0.rate['ask_price'] = ask_price
+        newEdge0.rate['bid_price'] = bid_price
+
+        newEdge1.rate['ask_price'] = 1 / bid_price
+        newEdge1.rate['bid_price'] = 1 / ask_price
 
         Node0.out[pair[1]] = {}
         Node0.out[pair[1]]['node'] = Node1
-        #Node0.out[pair[1]]['rate'] = rates['{}.{}'.format( pair[0], pair[1] )]
         Node0.out[pair[1]]['edge'] = newEdge0
         Node0.out['count'] +=1
 
         Node0.come[pair[1]] = {}
         Node0.come[pair[1]]['node'] = Node1
-        #Node0.come[pair[1]]['rate'] = rates['{}.{}'.format(pair[1], pair[0])]
         Node0.come[pair[1]]['edge'] = newEdge1
         Node0.come['count'] += 1
 
         Node1.out[pair[0]] = {}
         Node1.out[pair[0]]['node'] = Node0
-        #Node1.out[pair[0]]['rate'] = rates['{}.{}'.format( pair[1], pair[0] )]
         Node1.out[pair[0]]['edge'] = newEdge0
         Node1.out['count'] +=1
 
         Node1.come[pair[0]] = {}
         Node1.come[pair[0]]['node'] = Node0
-        # Node1.out[pair[0]]['rate'] = rates['{}.{}'.format( pair[0], pair[1] )]
         Node1.come[pair[0]]['edge'] = newEdge0
         Node1.come['count'] +=1
 
         graph.edges[pair[0], pair[1]] = ( newEdge0 )
         graph.edges[pair[1], pair[0]] = (newEdge1)
 
+        print('debug')
 
     print( 'End' )
 
