@@ -50,7 +50,7 @@ class Graph:
         self.nodes = {}     # 图的所有节点集合  字典形式：{节点编号：节点}
         self.edges = pd.DataFrame()    # 图的边集合
 
-        self.pah = {}
+        self.path = pd.DataFrame(columns=['fro_contract','to0_contract','to0_price','to1_contract','to1_price','to2_contract','to2_price'])
 
 
 def demo():
@@ -106,12 +106,12 @@ def demo():
         print(newEdge1.df)
         graph.edges = pd.concat([graph.edges, newEdge0.df, newEdge1.df])
 
-        contract_df0 = pd.DataFrame(newEdge0.df[['to','ask_price','bid_price']])
+        contract_df0 = pd.DataFrame(newEdge0.df)
         print(contract_df0)
         Node0.contract = pd.concat([Node0.contract,contract_df0])
         #print(Node0.contract)
 
-        contract_df1 = pd.DataFrame(newEdge1.df[['to','ask_price','bid_price']])
+        contract_df1 = pd.DataFrame(newEdge1.df)
         print(contract_df1)
         Node1.contract = pd.concat([Node1.contract,contract_df1])
         #print(Node1.contract)
@@ -128,25 +128,28 @@ def demo():
 
         for to in df['to']:
             print(to)
-
+            path = pd.DataFrame()
             bid1 = Node0.mid[Node0.mid['fro']==to]
-            Node0.path['bid1_contract'] = bid1['to']
-            Node0.path['bid1_price'] = bid1['bid_price']
+            path['to1_contract'] = bid1['to']
+            path['to1_price'] = bid1['bid_price']
 
             bid0 = Node0.contract[Node0.contract['to'] == to]
-            Node0.path['bid0_contract'] = to
-            Node0.path['bid0_price'] = bid0['bid_price'].values[0]
-            print(Node0.path)
+            path['to0_contract'] = to
+            path['fro_contract'] = node
+            path['to0_price'] = bid0['bid_price'].values[0]
+            print(path)
 
             #todo:调试bid2
             fro = graph.edges[graph.edges['fro'].isin(bid1['to'].values) ]
             bid2 = fro[fro['to'] == node]
-            Node0.path['bid2_price'] = bid2['bid_price'].values[0]
-            Node0.path['bid2_contract'] = node
-            print(Node0.path)
+            path['to2_price'] = bid2['bid_price'].values
+            path['to2_contract'] = node
+            print(path)
 
-            Node0.path['commition'] = 0.0003
-            Node0.path['value'] = Node0.path['bid0_price'] * Node0.path['bid1_price'] * Node0.path['bid2_price'] * math.pow((1- Node0.path['commition']) ,3)
+            graph.path = pd.concat([graph.path,path])
+
+        # Node0.path['commition'] = 0.0003
+        # Node0.path['value'] = Node0.path['bid0_price'] * Node0.path['bid1_price'] * Node0.path['bid2_price'] * math.pow((1 - Node0.path['commition']), 3)
 
             print('debug')
 
