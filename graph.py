@@ -125,7 +125,12 @@ def demo():
         Node0.mid = fro[fro['to'].isin(df['to'])]
         print(Node0.mid)
 
-        print('debug')
+        for to in df['to']:
+            print(to)
+            fro = Node0.mid[Node0.mid['fro']==to]
+            Node0.path = fro
+            print(Node0.path)
+            print('debug')
 
     print( 'End' )
 
