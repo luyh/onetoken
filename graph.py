@@ -70,7 +70,7 @@ def demo():
 
     graph = Graph()
 
-    for contract in okex_contracts:
+    for contract in okex_contracts[:10]:
         pair = contract.split( '.' )
 
         ask_price = okex_tickets['ask_price'][okex_tickets['contract'] == ('okex/'+contract )]
@@ -127,9 +127,22 @@ def demo():
 
         for to in df['to']:
             print(to)
-            fro = Node0.mid[Node0.mid['fro']==to]
-            Node0.path = fro
+
+            bid1 = Node0.mid[Node0.mid['fro']==to]
+            Node0.path['bid1_contract'] = bid1['to']
+            Node0.path['bid1_price'] = bid1['bid_price']
+
+            bid0 = Node0.contract[Node0.contract['to'] == to]
+            Node0.path['bid0_contract'] = to
+            Node0.path['bid0_price'] = bid0['bid_price'].values[0]
             print(Node0.path)
+
+            fro = graph.edges[graph.edges['fro']==to ]
+            bid2 = graph.edges[graph.edges['to'] == node]
+            Node0.path['bid2_price'] = bid2['bid_price'].values[0]
+            print(Node0.path)
+
+
             print('debug')
 
     print( 'End' )
