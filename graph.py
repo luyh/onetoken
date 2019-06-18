@@ -83,15 +83,16 @@ def demo():
     onetoken = OneToken()
 
     exchange = onetoken.exchanges
-    contracts1 = onetoken.contracts
+    okex_contracts = onetoken.contracts['okex']['name']
 
-    contracts = ['eos.usdt', 'eos.usdk', 'usdt.usdk']
+    #contracts = ['eos.usdt', 'eos.usdk', 'usdt.usdk','eos.btc']
 
     graph = Graph()
 
-    for contract in contracts:
+    for contract in okex_contracts:
         pair = contract.split( '.' )
         bid, ask = get_price( contract )
+        print('contract:{},bid:{},ask:{}'.format(contract,bid,ask))
         rates = {}
         rates['{}.{}'.format( pair[0], pair[1] )] = bid * (1 - 0.00002)
         rates['{}.{}'.format( pair[1], pair[0] )] = 1 / ask * (1 - 0.00002)
@@ -122,9 +123,6 @@ def demo():
             Node1.come['count'] +=1
 
             graph.edges[edge[0], edge[1]] = ( newEdge )
-
-
-
 
     print( 'End' )
 

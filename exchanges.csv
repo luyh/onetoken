@@ -1,0 +1,18 @@
+,exchange,alias,sub_markets,sub_markets_alias,type
+0,huobip,Huobi(火币),"['usdt', 'husd', 'btc', 'eth', 'ht']",,spot
+1,huobif,火币合约(α),"['usd.t', 'usd.n', 'usd.q']","['当周', '次周', '季度']",future
+2,okex,OKEX(现货),"['usdt', 'btc', 'eth', 'okb', 'usdk']",,spot
+3,okef,OKEX(合约),"['usd.t', 'usd.n', 'usd.q']","['当周', '次周', '季度']",future
+4,okswap,OKEX(永续合约),['usd.td'],['永续'],future
+5,binance,Binance(币安),"['usdt', 'btc', 'eth', 'bnb', 'pax', 'usdc', 'usds', 'tusd']",,spot
+6,bitfinex,Bitfinex,"['usd', 'btc', 'eth', 'eur', 'gbp', 'jpy', 'eos', 'xlm']",,spot
+7,gate,Gate,"['usdt', 'btc', 'eth', 'qtum', 'cnyx']",,spot
+8,poloniex,Poloniex,"['btc', 'xmr', 'eth', 'usdt', 'usdc']",,spot
+9,bittrex,Bittrex,"['usdt', 'btc', 'eth', 'usd']",,spot
+10,gdax,Coinbase,['usd'],,spot
+11,zb,ZB,"['usdt', 'btc', 'qc', 'zb', 'pax']",,spot
+12,fcoin,FCoin(α),"['usdt', 'btc', 'eth', 'ft']",,spot
+13,bitmex,BitMEX,"['usd.td', 'btc.2019-06-28', 'usd.2019-06-28', 'usd.2019-09-27', 'btc.2019-09-27', 'usd.2019-12-27']","['永续', 'btc.190628', 'usd.190628', 'usd.190927', 'btc.190927', 'usd.191227']",future
+14,bibox,Bibox,"['usdt', 'btc', 'eth', 'dai', 'bix', 'gusd']",,spot
+15,bithumb,Bithumb,['krw'],,spot
+16,upbit,UPbit,['krw'],,spot
