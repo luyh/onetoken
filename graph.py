@@ -97,32 +97,44 @@ def demo():
         rates['{}.{}'.format( pair[0], pair[1] )] = bid * (1 - 0.00002)
         rates['{}.{}'.format( pair[1], pair[0] )] = 1 / ask * (1 - 0.00002)
 
-        graph.nodes[pair[0]] = Node('okex', pair[0] )
-        graph.nodes[pair[1]] = Node( 'okex',pair[1] )
+        if not pair[0] in graph.nodes.keys():
+            graph.nodes[pair[0]] = Node('okex', pair[0] )
+        if not pair[1] in graph.nodes.keys():
+            graph.nodes[pair[1]] = Node('okex', pair[1])
 
-        Node1 = graph.nodes[pair[0]]
-        Node2 = graph.nodes[pair[1]]
+        Node0 = graph.nodes[pair[0]]
+        Node1 = graph.nodes[pair[1]]
 
+        newEdge0 = Edge( Node0, Node1, rates['{}.{}'.format( pair[0], pair[1] )] )
+        newEdge1 = Edge(Node1, Node0, rates['{}.{}'.format(pair[1], pair[0])])
 
-        for edge in itertools.permutations( pair, 2 ):
-            Node0 = graph.nodes[edge[0]]
-            Node1 = graph.nodes[edge[1]]
-            rate = rates['{}.{}'.format(edge[0], edge[1])]
+        Node0.out[pair[1]] = {}
+        Node0.out[pair[1]]['node'] = Node1
+        #Node0.out[pair[1]]['rate'] = rates['{}.{}'.format( pair[0], pair[1] )]
+        Node0.out[pair[1]]['edge'] = newEdge0
+        Node0.out['count'] +=1
 
-            newEdge = Edge( Node0, Node1, rate )
+        Node0.come[pair[1]] = {}
+        Node0.come[pair[1]]['node'] = Node1
+        #Node0.come[pair[1]]['rate'] = rates['{}.{}'.format(pair[1], pair[0])]
+        Node0.come[pair[1]]['edge'] = newEdge1
+        Node0.come['count'] += 1
 
-            Node0.out[edge[1]] = {}
-            Node0.out[edge[1]]['node'] = Node1
-            Node0.out[edge[1]]['rate'] = rate
-            Node0.out[edge[1]]['edge'] = newEdge
-            Node0.out['count'] +=1
+        Node1.out[pair[0]] = {}
+        Node1.out[pair[0]]['node'] = Node0
+        #Node1.out[pair[0]]['rate'] = rates['{}.{}'.format( pair[1], pair[0] )]
+        Node1.out[pair[0]]['edge'] = newEdge0
+        Node1.out['count'] +=1
 
-            Node1.come[edge[0]] = {}
-            Node1.come[edge[0]]['node'] = Node0
-            Node1.come[edge[0]]['edge'] = newEdge
-            Node1.come['count'] +=1
+        Node1.come[pair[0]] = {}
+        Node1.come[pair[0]]['node'] = Node0
+        # Node1.out[pair[0]]['rate'] = rates['{}.{}'.format( pair[0], pair[1] )]
+        Node1.come[pair[0]]['edge'] = newEdge0
+        Node1.come['count'] +=1
 
-            graph.edges[edge[0], edge[1]] = ( newEdge )
+        graph.edges[pair[0], pair[1]] = ( newEdge0 )
+        graph.edges[pair[1], pair[0]] = (newEdge1)
+
 
     print( 'End' )
 
