@@ -140,6 +140,7 @@ def demo():
             fro = graph.edges[graph.edges['fro']==to ]
             bid2 = graph.edges[graph.edges['to'] == node]
             Node0.path['bid2_price'] = bid2['bid_price'].values[0]
+            Node0.path['bid2_contract'] = node
             print(Node0.path)
 
 
