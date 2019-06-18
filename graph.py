@@ -8,10 +8,9 @@ class Node:
         self.exchange = exchange
         self.name = name      # 节点值
 
-        self.come= {}      #入节点，边：dict:名称:节点，边 ,入度
-        self.out = {}      #出节点，边：dict:名称:节点，边 ,入度
-        self.come['count'] = 0
-        self.out['count'] = 0
+        self.contract = pd.DataFrame()      #DataFrame入节点，边：dict:名称:节点，边 ,入度
+
+
 
 # 图的边结构
 class Edge:
@@ -116,25 +115,25 @@ def demo():
         newEdge1.rate['ask_price'] = 1 / bid_price
         newEdge1.rate['bid_price'] = 1 / ask_price
 
-        Node0.out[pair[1]] = {}
-        Node0.out[pair[1]]['node'] = Node1
-        Node0.out[pair[1]]['edge'] = newEdge0
-        Node0.out['count'] +=1
+        contract0 = {'contract':pair[1],
+               'ask':newEdge0.rate['ask_price'],
+               'bid':newEdge0.rate['bid_price']
+               }
 
-        Node0.come[pair[1]] = {}
-        Node0.come[pair[1]]['node'] = Node1
-        Node0.come[pair[1]]['edge'] = newEdge1
-        Node0.come['count'] += 1
+        contract_df = pd.DataFrame(contract0)
+        print(contract_df)
+        Node0.contract = pd.concat([Node0.contract,contract_df])
+        print(Node0.contract)
 
-        Node1.out[pair[0]] = {}
-        Node1.out[pair[0]]['node'] = Node0
-        Node1.out[pair[0]]['edge'] = newEdge0
-        Node1.out['count'] +=1
+        contract1 = {'contract':pair[0],
+               'ask':newEdge1.rate['ask_price'],
+               'bid':newEdge1.rate['bid_price']
+               }
 
-        Node1.come[pair[0]] = {}
-        Node1.come[pair[0]]['node'] = Node0
-        Node1.come[pair[0]]['edge'] = newEdge0
-        Node1.come['count'] +=1
+        contract_df1 = pd.DataFrame(contract1)
+        print(contract_df1)
+        Node1.contract = pd.concat([Node1.contract,contract_df1])
+        print(Node1.contract)
 
         graph.edges[pair[0], pair[1]] = ( newEdge0 )
         graph.edges[pair[1], pair[0]] = (newEdge1)
