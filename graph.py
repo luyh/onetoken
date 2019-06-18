@@ -2,6 +2,7 @@ import requests
 import itertools
 import pandas as pd
 from sync_api.demo_public import OneToken
+import math
 # 图的节点结构
 class Node:
     def __init__(self, exchange,name):
@@ -137,12 +138,15 @@ def demo():
             Node0.path['bid0_price'] = bid0['bid_price'].values[0]
             print(Node0.path)
 
-            fro = graph.edges[graph.edges['fro']==to ]
-            bid2 = graph.edges[graph.edges['to'] == node]
+            #todo:调试bid2
+            fro = graph.edges[graph.edges['fro'].isin(bid1['to'].values) ]
+            bid2 = fro[fro['to'] == node]
             Node0.path['bid2_price'] = bid2['bid_price'].values[0]
             Node0.path['bid2_contract'] = node
             print(Node0.path)
 
+            Node0.path['commition'] = 0.0003
+            Node0.path['value'] = Node0.path['bid0_price'] * Node0.path['bid1_price'] * Node0.path['bid2_price'] * math.pow((1- Node0.path['commition']) ,3)
 
             print('debug')
 
