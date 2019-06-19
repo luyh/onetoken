@@ -70,10 +70,17 @@ class OneToken():
 
     def get_quote_tickets(self,exchange):
         res = requests.get('https://1token.trade/api/v1/quote/ticks?exchange={}'.format(exchange))
-        pprint(res.json()[:3], width=1000)
+        #pprint(res.json()[:3], width=1000)
 
         tickets = pd.DataFrame(res.json(),columns=['contract','last','asks','bids'])
-        print(tickets)
+        tickets['ask_price'] = list(map(lambda x: x[0]['price'], tickets['asks']))
+        tickets['ask_volume'] = list(map(lambda x: x[0]['volume'], tickets['asks']))
+        tickets['bid_price'] = list(map(lambda x: x[0]['price'], tickets['bids']))
+        tickets['bid_volume'] = list(map(lambda x: x[0]['volume'], tickets['bids']))
+        del tickets['asks']
+        del tickets['bids']
+        
+        #print(tickets)
         return tickets
 
     def get_all_exchanges_tickets(self):
