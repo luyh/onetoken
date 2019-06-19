@@ -71,7 +71,8 @@ def demo():
 
     graph = Graph()
 
-    for contract in okex_contracts[:10]:
+    #for contract in okex_contracts[:10]:
+    for contract in okex_contracts:
         pair = contract.split( '.' )
 
         ask_price = okex_tickets['ask_price'][okex_tickets['contract'] == ('okex/'+contract )]
@@ -139,11 +140,14 @@ def demo():
             path['to0_price'] = bid0['bid_price'].values[0]
             print(path)
 
-            #todo:调试bid2
-            fro = graph.edges[graph.edges['fro'].isin(bid1['to'].values) ]
-            bid2 = fro[fro['to'] == node]
-            path['to2_price'] = bid2['bid_price'].values
-            path['to2_contract'] = node
+            fros = bid1['to'].values[:]
+            print(fros)
+            print(Node0.contract.fro.isin(fros))
+            bid2 = Node0.contract[Node0.contract.to.isin(fros)]
+            temp = bid2
+            temp['to2_price'] = 1 / bid2['ask_price'].values[:]
+            temp['to2_contract'] = node
+            path = pd.merge(path,temp[['to','to2_contract','ask_price','to2_price']],left_on='to1_contract',right_on = 'to')
             print(path)
 
             graph.path = pd.concat([graph.path,path])
@@ -152,6 +156,7 @@ def demo():
         graph.path['value'] = graph.path['to0_price'] * graph.path['to1_price'] * graph.path['to2_price'] * math.pow((1 - commition), 3)
         print('debug')
 
+    print(graph.path[graph.path['value']>1])
     print( 'End' )
 
 
