@@ -10,27 +10,13 @@ import pickle
 from demo_private import api_call
 
 class OneToken():
-    def __init__(self,debug = False):
+    def __init__(self,exchange = None,debug = False):
         self.debug = debug
 
-        self.exchanges = None
-        self.exchanges_spot = {}
-        self.contracts = {}
-        self.all_exchanges_tickets =  {}
-
-        self.contracts_spot = {}
-
         try:
-            self.load_exchanges()
+            self.exchanges = pd.read_csv( 'exchanges.csv' )
         except:
-            self.get_exchanges()
-            self.save_exchanges()
-
-        try:
-            self.load_contracts()
-        except:
-            self.get_contracts()
-            self.save_contracts()
+            self.exchanges = self.get_exchanges()
 
     def get_time(self):
         res = requests.get('https://1token.trade/api/v1/basic/time')
@@ -42,73 +28,48 @@ class OneToken():
         # pprint(res.json(), width=240)
         exchanges = pd.DataFrame(res.json(), columns=['exchange', 'alias', 'sub_markets', 'sub_markets_alias', 'type'])
         #print(exchanges)
-        self.exchanges =  exchanges
-        self.exchanges_spot = exchanges[exchanges['type'] == 'spot']
-        if self.debug:
-            print( 'exchanges_spot', self.exchanges_spot )
+        exchanges.to_csv('exchanges.csv')
+        return exchanges
 
-    def save_exchanges(self):
-        self.exchanges.to_csv('exchanges.csv')
-        self.exchanges_spot.to_csv('exchanges_spot.csv')
+class Exchange():
+    def __init__(self,exchange):
+        self.exchange = exchange
 
-    def load_exchanges(self):
-        self.exchanges = pd.read_csv('exchanges.csv')
-        self.exchanges_spot = pd.read_csv( 'exchanges_spot.csv' )
+        self._contract_file = '{}_contract.csv'.format(exchange)
 
-    def get_contract(self,exchange):
-        res = requests.get('https://1token.trade/api/v1/basic/contracts?exchange={}'.format(exchange))
+        try:
+            self.contract = pd.read_csv(self._contract_file)
+        except FileNotFoundError:
+            self.contract = self._get_contract()
+
+    def _get_contract(self):
+        res = requests.get( 'https://1token.trade/api/v1/basic/contracts?exchange={}'.format( self.exchange ) )
         # pprint(res.json(), width=1000)
-        df = pd.DataFrame(res.json(),
-                                           columns=['id', 'name', 'symbol', 'unit_amount', 'min_change', 'min_amount'])  #
-        #print(contracts[exchange])
+        df = pd.DataFrame( res.json(),
+                           columns=['id', 'name', 'symbol', 'unit_amount', 'min_change', 'min_amount'] )  #
+        df.to_csv(self._contract_file)
+        print('save {} done'.format(self._contract_file))
         return df
 
-    def get_contracts_spot(self):
+    def get_quote_tickets(self):
+        res = requests.get( 'https://1token.trade/api/v1/quote/ticks?exchange={}'.format( self.exchange ) )
+        # pprint(res.json()[:3], width=1000)
 
-        for key, values in self.contracts.items():
-            if key in self.exchanges_spot['exchange'].values[:]:
-                self.contracts_spot[key] = values
-
-        if self.debug:
-            print( 'contracts_spot', self.contracts_spot )
-
-    def get_contracts(self):
-        for exchange in self.exchanges['exchange']:
-            contract = self.get_contract(exchange)
-            self.contracts[exchange] = contract  #
-
-    def save_contracts(self):
-        with open('contracts.pk', 'wb') as f:
-            pickle.dump(self.contracts, f)
-
-    def load_contracts(self):
-        with open('contracts.pk', 'rb') as f:
-            self.contracts = pickle.load(f)
-
-    def get_quote_tickets(self,exchange):
-        res = requests.get('https://1token.trade/api/v1/quote/ticks?exchange={}'.format(exchange))
-        #pprint(res.json()[:3], width=1000)
-
-        tickets = pd.DataFrame(res.json(),columns=['contract','last','asks','bids'])
-        tickets['ask_price'] = list(map(lambda x: x[0]['price'], tickets['asks']))
-        tickets['ask_volume'] = list(map(lambda x: x[0]['volume'], tickets['asks']))
-        tickets['bid_price'] = list(map(lambda x: x[0]['price'], tickets['bids']))
-        tickets['bid_volume'] = list(map(lambda x: x[0]['volume'], tickets['bids']))
+        tickets = pd.DataFrame( res.json(), columns=['contract', 'last', 'asks', 'bids'] )
+        tickets['ask_price'] = list( map( lambda x: x[0]['price'], tickets['asks'] ) )
+        tickets['ask_volume'] = list( map( lambda x: x[0]['volume'], tickets['asks'] ) )
+        tickets['bid_price'] = list( map( lambda x: x[0]['price'], tickets['bids'] ) )
+        tickets['bid_volume'] = list( map( lambda x: x[0]['volume'], tickets['bids'] ) )
         del tickets['asks']
         del tickets['bids']
-        
-        #print(tickets)
+
+        # print(tickets)
         return tickets
 
-    def get_all_exchanges_tickets(self):
-        for exchange in self.exchanges['exchange']:
-            self.all_exchanges_tickets[exchange] =self.get_quote_tickets(exchange)
-
-    def get_single_ticket(self,exchange,contract):
-        res = requests.get('https://1token.trade/api/v1/quote/single-tick/{}/{}'.format(exchange,contract))
+    def get_single_ticket(self,contract):
+        res = requests.get('https://1token.trade/api/v1/quote/single-tick/{}/{}'.format(self.exchange,contract))
         ticket = pd.DataFrame(res.json(),columns=['contract','last','asks','bids'])
         return ticket
-
 
 def demo():
     onetoken = OneToken()
@@ -116,17 +77,14 @@ def demo():
     #获取支持的交易所
     print(onetoken.exchanges)
 
-    #获取各交易所交易对信息
-    print(onetoken.contracts)
+    okex = Exchange('okex')
+    print('okex_contract',okex.contract)
+    okex_tickets = okex.get_quote_tickets()
+    print('okex_tickets',okex_tickets)
 
-    tickets = onetoken.get_quote_tickets('okex')
-    print(tickets)
-
-    onetoken.get_all_exchanges_tickets()
-    print(onetoken.all_exchanges_tickets)
-
-    ticket = onetoken.get_single_ticket('okef','btc.usd.q')
-    print(ticket)
+    okef = Exchange('okef')
+    okef_btc_usd_q_ticket = okef.get_single_ticket('btc.usd.q')
+    print('okef_btc_usd_q_ticket',okef_btc_usd_q_ticket)
 
 def eos_usdt_usdk_price():
     onetoken = OneToken()
@@ -211,7 +169,9 @@ if __name__ == '__main__':
     r = api_call( 'GET', '/{}/info'.format( account ) )
     print( r.json() )
 
-    eos_usdt_usdk_price()
+    demo()
+
+
     print('end')
     # print('start')
     # while True:
