@@ -10,13 +10,16 @@ import pickle
 from demo_private import api_call
 
 class OneToken():
-    def __init__(self):
+    def __init__(self,debug = False):
+        self.debug = debug
+
         self.exchanges = None
+        self.exchanges_spot = {}
         self.contracts = {}
         self.all_exchanges_tickets =  {}
 
-        self.init()
-    def init(self):
+        self.contracts_spot = {}
+
         try:
             self.load_exchanges()
         except:
@@ -40,12 +43,17 @@ class OneToken():
         exchanges = pd.DataFrame(res.json(), columns=['exchange', 'alias', 'sub_markets', 'sub_markets_alias', 'type'])
         #print(exchanges)
         self.exchanges =  exchanges
+        self.exchanges_spot = exchanges[exchanges['type'] == 'spot']
+        if self.debug:
+            print( 'exchanges_spot', self.exchanges_spot )
 
     def save_exchanges(self):
         self.exchanges.to_csv('exchanges.csv')
+        self.exchanges_spot.to_csv('exchanges_spot.csv')
 
     def load_exchanges(self):
         self.exchanges = pd.read_csv('exchanges.csv')
+        self.exchanges_spot = pd.read_csv( 'exchanges_spot.csv' )
 
     def get_contract(self,exchange):
         res = requests.get('https://1token.trade/api/v1/basic/contracts?exchange={}'.format(exchange))
@@ -54,6 +62,15 @@ class OneToken():
                                            columns=['id', 'name', 'symbol', 'unit_amount', 'min_change', 'min_amount'])  #
         #print(contracts[exchange])
         return df
+
+    def get_contracts_spot(self):
+
+        for key, values in self.contracts.items():
+            if key in self.exchanges_spot['exchange'].values[:]:
+                self.contracts_spot[key] = values
+
+        if self.debug:
+            print( 'contracts_spot', self.contracts_spot )
 
     def get_contracts(self):
         for exchange in self.exchanges['exchange']:

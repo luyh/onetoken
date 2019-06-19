@@ -27,11 +27,25 @@ class Edge:
 
 # 图结构
 class Graph:
-    def __init__(self):
+    def __init__(self,debug = False):
+        self.debug = debug
+
         self.nodes = {}     # 图的所有节点集合  字典形式：{节点编号：节点}
         self.edges = pd.DataFrame()    # 图的边集合
-
         self.path = pd.DataFrame(columns=['fro_contract','to0_contract','to0_price','to1_contract','to1_price','to2_contract','to2_price'])
+
+        self.onetoken = OneToken(debug = True)
+
+    def test(self):
+        exchanges_spot = self.onetoken.exchanges_spot
+
+        self.onetoken.get_contracts_spot()
+        contracts_spot = self.onetoken.exchanges_spot
+
+
+def demo_graph():
+    graph = Graph(debug = True)
+    graph.test()
 
 
 def demo():
@@ -157,4 +171,4 @@ def demo():
 
 
 if __name__ == '__main__':
-    demo()
+    demo_graph()
