@@ -156,7 +156,10 @@ def demo():
         graph.path['value'] = graph.path['to0_price'] * graph.path['to1_price'] * graph.path['to2_price'] * math.pow((1 - commition), 3)
         print('debug')
 
-    print(graph.path[graph.path['value']>1])
+
+    profit = graph.path[graph.path['value']>1]
+    profit['profit'] = profit['value'] -1
+    print(profit.sort_values(by = ['value'],ascending=[False]))
     print( 'End' )
 
 
